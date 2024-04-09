@@ -224,5 +224,7 @@ def main():
 
     utils.save_missclassified_images(device, model, test_loader, 'images/results.png')
 
+    utils.save_grad_cam_images(device, model, test_loader, 'images/grad_cam.png', [model.layer3[-1]])
+
 if __name__ == "__main__":
     main()

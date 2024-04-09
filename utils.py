@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 
 from torchview import draw_graph
 from torch_lr_finder import LRFinder
+from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam.utils.image import show_cam_on_image
+from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
 CLASS_NAMES= ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
@@ -300,5 +303,51 @@ def save_missclassified_images(device, model, test_loader, path):
         image = np.transpose(image, (1, 2, 0))
         image = inv_transform(image=image)['image']
         plt.imshow(image)
+    plt.savefig(path)
+    plt.close(figure)
+
+def save_grad_cam_images(device, model, test_loader, path, target_layers):
+    """Method to plot missclassified images
+
+    Args:
+        device (string): Type of device "cuda" or "cpu"
+        model (Object): Object of model
+        test_loader (Object): Object of dataloader class
+    """
+    model.eval()
+    inv_transform = get_inv_transforms()
+    missclassified_image_list = []
+    label_list = []
+    pred_list = []
+
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            pred = output.argmax(dim=1, keepdim=True)
+            if len(missclassified_image_list) > 10:
+                break
+            for i in range(len(pred)):
+                if pred[i] != target[i]:
+                    missclassified_image_list.append(data[i])
+                    label_list.append(CLASS_NAMES[target[i]])
+                    pred_list.append(CLASS_NAMES[pred[i]])
+
+    cam = GradCAM(model=model, target_layers=target_layers)
+
+    figure = plt.figure(figsize=(20,20))
+    num_of_images = 10
+    for index in range(1, num_of_images + 1):
+        plt.subplot(2, 5, index)
+        plt.title(f'Actual: {label_list[index]} Prediction: {pred_list[index]}')
+        plt.axis('off')
+        input_tensor = missclassified_image_list[index].cpu()
+        targets = [ClassifierOutputTarget(CLASS_NAMES.index(pred_list[index]))]
+
+        grayscale_cam = cam(input_tensor=input_tensor.unsqueeze(0), targets=targets)
+
+        grayscale_cam = grayscale_cam[0, :]
+        visualization = show_cam_on_image(input_tensor, grayscale_cam, use_rgb=True)
+        plt.imshow(visualization)
     plt.savefig(path)
     plt.close(figure)
