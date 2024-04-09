@@ -32,7 +32,7 @@ def get_args():
     parser.add_argument('--optimizer', default="SGD", type=str, help="Type of optimizer e.g. ADAM")
     parser.add_argument('--scheduler', default=None, type=str, help="Type of leraning rate scheduler e.g OneCycleLR")
     parser.add_argument('--loss_type', default='cross_entropy', type=str, help='Type of loss e.g. nll_loss')
-    parser.add_argument('--model_name', default="resent18", type=str, help="Type of model to use e.g. resnet18")
+    parser.add_argument('--model_name', default="resnet18", type=str, help="Type of model to use e.g. resnet18")
     args = parser.parse_args()
     return args
 
@@ -84,7 +84,8 @@ def _train(model, device, train_loader, optimizer, scheduler, criterion, train_l
         # Backpropagation
         loss.backward() # Compute gradients
         optimizer.step() # Updates weights
-        scheduler.step() # Update learning rate
+        if scheduler != None:
+            scheduler.step() # Update learning rate
 
         correct += GetCorrectPredCount(pred, target) # Store correct prediction count
         processed += len(data) # Store amount of data processed
@@ -199,7 +200,18 @@ def main():
     utils.save_model_architecture(model, filename="ResNet", directory="images")
 
     optimizer = utils.get_optimizer(model, lr=args.lr, momentum=0.9, optimizer_type=args.optimizer)
-    scheduler = utils.get_StepLR_scheduler(optimizer, step_size=10, gamma=0.1)
+    scheduler = None
+    if args.scheduler == "StepLR":
+        scheduler = utils.get_StepLR_scheduler(optimizer, step_size=10, gamma=0.1)
+    elif args.scheduler == "ReduceLROnPlateau":
+        scheduler = utils.get_ReduceLROnPlateau_scheduler(optimizer, factor=0.1, patience=10)
+    elif args.scheduler == "OneCycleLR":
+        max_lr = utils.get_learning_rate(model, optimizer, criterion, device, train_loader)
+        scheduler = utils.get_OneCycleLR_scheduler(optimizer, max_lr=max_lr,  epochs=args.epochs,
+                                           steps_per_epoch=len(train_loader), max_at_epoch=5,
+                                           anneal_strategy = 'linear', div_factor=10,
+                                           final_div_factor=1)
+
     criterion = utils.get_criterion(loss_type=args.loss_type)
 
     train_losses, train_acc, test_losses, test_acc = start_training(
