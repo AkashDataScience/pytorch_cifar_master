@@ -55,7 +55,7 @@ def save_samples(train_loader, path):
     images, labels = next(iter(train_loader))
 
     for index in range(1, num_of_images + 1):
-        plt.subplot(5, 5, index)
+        plt.subplot(2, 5, index)
         plt.title(CLASS_NAMES[labels[index].numpy()])
         plt.axis('off')
         image = np.array(images[index])
@@ -293,7 +293,7 @@ def save_missclassified_images(device, model, test_loader, path):
     figure = plt.figure(figsize=(20,20))
     num_of_images = 10
     for index in range(1, num_of_images + 1):
-        plt.subplot(5, 5, index)
+        plt.subplot(2, 5, index)
         plt.title(f'Actual: {label_list[index]} Prediction: {pred_list[index]}')
         plt.axis('off')
         image = np.array(missclassified_image_list[index].cpu())

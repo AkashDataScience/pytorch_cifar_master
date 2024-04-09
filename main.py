@@ -159,8 +159,9 @@ def start_training(num_epochs, model, device, train_loader, test_loader, optimiz
 
     for epoch in range(1, num_epochs+1):
         print(f'Epoch {epoch}')
-        # Print learning rate
-        print(f'Current learning rate: {scheduler.get_last_lr()}')
+        if scheduler != None:
+            # Print learning rate
+            print(f'Current learning rate: {scheduler.get_last_lr()}')
         # Train for one epochs
         _train(model, device, train_loader, optimizer, scheduler, criterion, train_losses, train_acc)
         # Test model
@@ -172,7 +173,7 @@ def get_model(model_name, device):
     if model_name=='resnet18':
         return ResNet18().to(device)
     elif model_name=='resnet34':
-        return ResNet34()
+        return ResNet34().to(device)
 
 def main():
     args = get_args()
@@ -221,7 +222,7 @@ def main():
 
     utils.save_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc, 'images/metrics.png')
 
-    utils.save_missclassified_images(device, model, test_loader, 'iamges/results.png')
+    utils.save_missclassified_images(device, model, test_loader, 'images/results.png')
 
 if __name__ == "__main__":
     main()
