@@ -347,7 +347,10 @@ def save_grad_cam_images(device, model, test_loader, path, target_layers):
         grayscale_cam = cam(input_tensor=input_tensor.unsqueeze(0), targets=targets)
 
         grayscale_cam = grayscale_cam[0, :]
-        visualization = show_cam_on_image(input_tensor, grayscale_cam, use_rgb=True)
+        image = np.array(missclassified_image_list[index].cpu())
+        image = np.transpose(image, (1, 2, 0))
+        image = inv_transform(image=image)['image']
+        visualization = show_cam_on_image(image, grayscale_cam, use_rgb=True)
         plt.imshow(visualization)
     plt.savefig(path)
     plt.close(figure)
