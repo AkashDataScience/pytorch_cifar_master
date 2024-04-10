@@ -53,7 +53,7 @@ def save_samples(train_loader, path):
     """
     inv_transform = get_inv_transforms()
 
-    figure = plt.figure(figsize=(20,20))
+    figure = plt.figure(figsize=(20,8))
     num_of_images = 10
     images, labels = next(iter(train_loader))
 
@@ -293,7 +293,7 @@ def save_missclassified_images(device, model, test_loader, path):
                     label_list.append(CLASS_NAMES[target[i]])
                     pred_list.append(CLASS_NAMES[pred[i]])
 
-    figure = plt.figure(figsize=(20,20))
+    figure = plt.figure(figsize=(20,8))
     num_of_images = 10
     for index in range(1, num_of_images + 1):
         plt.subplot(2, 5, index)
@@ -335,7 +335,7 @@ def save_grad_cam_images(device, model, test_loader, path, target_layers):
 
     cam = GradCAM(model=model, target_layers=target_layers)
 
-    figure = plt.figure(figsize=(20,20))
+    figure = plt.figure(figsize=(20,8))
     num_of_images = 10
     for index in range(1, num_of_images + 1):
         plt.subplot(2, 5, index)
@@ -350,6 +350,7 @@ def save_grad_cam_images(device, model, test_loader, path, target_layers):
         image = np.array(missclassified_image_list[index].cpu())
         image = np.transpose(image, (1, 2, 0))
         image = inv_transform(image=image)['image']
+        image = np.clip(image, 0, 1)
         visualization = show_cam_on_image(image, grayscale_cam, use_rgb=True)
         plt.imshow(visualization)
     plt.savefig(path)
