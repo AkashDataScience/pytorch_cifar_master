@@ -24,11 +24,13 @@ def get_inv_transforms():
                                               [1/0.24348513, 1/0.26158784, 1/0.24703223], max_pixel_value=1.0)
     return inv_transforms
 
-def plot_samples(train_loader):
+def plot_samples(train_loader, is_save, path):
     """Method to plot samples of augmented images
 
     Args:
         train_loader (Object): Object of data loader class to get images
+        is_save (bool): If true save plot on given path
+        path (str): Path to store plots
     """
     inv_transform = get_inv_transforms()
 
@@ -44,31 +46,10 @@ def plot_samples(train_loader):
         image = np.transpose(image, (1, 2, 0))
         image = inv_transform(image=image)['image']
         plt.imshow(image)
+    if is_save:
+        plt.savefig(path)
+        print(f"Sample images are saved at {path}")
     plt.show()
-
-def save_samples(train_loader, path):
-    """Method to plot samples of augmented images
-
-    Args:
-        train_loader (Object): Object of data loader class to get images
-        path (str): Path to store plots
-    """
-    inv_transform = get_inv_transforms()
-
-    figure = plt.figure(figsize=(20,8))
-    num_of_images = 10
-    images, labels = next(iter(train_loader))
-
-    for index in range(1, num_of_images + 1):
-        plt.subplot(2, 5, index)
-        plt.title(CLASS_NAMES[labels[index].numpy()])
-        plt.axis('off')
-        image = np.array(images[index])
-        image = np.transpose(image, (1, 2, 0))
-        image = inv_transform(image=image)['image']
-        plt.imshow(image)
-    plt.savefig(path)
-    plt.close(figure)
 
 def plot_model_architecture(model):
     """Method to save model architecture
@@ -203,7 +184,7 @@ def get_learning_rate(model, optimizer, criterion, device, trainloader):
 
     return suggested_lr
 
-def plot_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc):
+def plot_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc, is_save, path):
     """Method to plot loss and accuracy of training and testing
 
     Args:
@@ -211,6 +192,8 @@ def plot_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc):
         train_acc (List): List containing accuracy of model after each epoch on training data
         test_losses (List): List containing loss of model after each epoch on testing data
         test_acc (List): List containing accuracy of model after each epoch on testing data
+        is_save (bool): If true save plot on given path
+        path (str): Path to store plots
     """
     fig, axs = plt.subplots(2,2,figsize=(15,10))
     # Plot training losses
@@ -225,42 +208,20 @@ def plot_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc):
     # Plot test aacuracy
     axs[1, 1].plot(test_acc)
     axs[1, 1].set_title("Test Accuracy")
+    if is_save:
+        fig.savefig(path)
+        print(f"Training metrics plot is saved at {path}")
     plt.show()
-    
 
-def save_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc, path):
-    """Method to plot loss and accuracy of training and testing
-
-    Args:
-        train_losses (List): List containing loss of model after each epoch on training data
-        train_acc (List): List containing accuracy of model after each epoch on training data
-        test_losses (List): List containing loss of model after each epoch on testing data
-        test_acc (List): List containing accuracy of model after each epoch on testing data
-        path (str): Path to save accuracy and loss plots
-    """
-    fig, axs = plt.subplots(2,2,figsize=(15,10))
-    # Plot training losses
-    axs[0, 0].plot(train_losses)
-    axs[0, 0].set_title("Training Loss")
-    # Plot training accuracy
-    axs[1, 0].plot(train_acc)
-    axs[1, 0].set_title("Training Accuracy")
-    # Plot test losses
-    axs[0, 1].plot(test_losses)
-    axs[0, 1].set_title("Test Loss")
-    # Plot test aacuracy
-    axs[1, 1].plot(test_acc)
-    axs[1, 1].set_title("Test Accuracy")
-    fig.savefig(path)
-    plt.close(fig)
-
-def plot_missclassified_images(device, model, test_loader):
+def plot_missclassified_images(device, model, test_loader, is_save, path):
     """Method to plot missclassified images
 
     Args:
         device (string): Type of device "cuda" or "cpu"
         model (Object): Object of model
         test_loader (Object): Object of dataloader class
+        is_save (bool): If true save plot on given path
+        path (str): Path to store plots
     """
     model.eval()
     inv_transform = get_inv_transforms()
@@ -291,50 +252,12 @@ def plot_missclassified_images(device, model, test_loader):
         image = np.transpose(image, (1, 2, 0))
         image = inv_transform(image=image)['image']
         plt.imshow(image)
+    if is_save:
+        plt.savefig(path)
+        print(f"Missclassified images are saved at {path}")
     plt.show()
 
-def save_missclassified_images(device, model, test_loader, path):
-    """Method to save missclassified images
-
-    Args:
-        device (string): Type of device "cuda" or "cpu"
-        model (Object): Object of model
-        test_loader (Object): Object of dataloader class
-        path (string): Path to save missclassified images
-    """
-    model.eval()
-    inv_transform = get_inv_transforms()
-    missclassified_image_list = []
-    label_list = []
-    pred_list = []
-
-    with torch.no_grad():
-        for data, target in test_loader:
-            data, target = data.to(device), target.to(device)
-            output = model(data)
-            pred = output.argmax(dim=1, keepdim=True)
-            if len(missclassified_image_list) > 10:
-                break
-            for i in range(len(pred)):
-                if pred[i] != target[i]:
-                    missclassified_image_list.append(data[i])
-                    label_list.append(CLASS_NAMES[target[i]])
-                    pred_list.append(CLASS_NAMES[pred[i]])
-
-    figure = plt.figure(figsize=(20,8))
-    num_of_images = 10
-    for index in range(1, num_of_images + 1):
-        plt.subplot(2, 5, index)
-        plt.title(f'Actual: {label_list[index]} Prediction: {pred_list[index]}')
-        plt.axis('off')
-        image = np.array(missclassified_image_list[index].cpu())
-        image = np.transpose(image, (1, 2, 0))
-        image = inv_transform(image=image)['image']
-        plt.imshow(image)
-    plt.savefig(path)
-    plt.close(figure)
-
-def plot_grad_cam_images(device, model, test_loader, target_layers):
+def plot_grad_cam_images(device, model, test_loader, target_layers, is_save, path):
     """Method to plot grad cam images
 
     Args:
@@ -342,6 +265,8 @@ def plot_grad_cam_images(device, model, test_loader, target_layers):
         model (Object): Object of model
         test_loader (Object): Object of dataloader class
         target_layer (Object): Convolution layer to extract the feature maps
+        is_save (bool): If true save plot on given path
+        path (str): Path to store plots
     """
     model.eval()
     inv_transform = get_inv_transforms()
@@ -382,56 +307,7 @@ def plot_grad_cam_images(device, model, test_loader, target_layers):
         image = np.clip(image, 0, 1)
         visualization = show_cam_on_image(image, grayscale_cam, use_rgb=True)
         plt.imshow(visualization)
+    if is_save:
+        plt.savefig(path)
+        print(f"Grad-CAM images are saved at {path}")
     plt.show()
-
-def save_grad_cam_images(device, model, test_loader, path, target_layers):
-    """Method to save grad-cam images
-
-    Args:
-        device (string): Type of device "cuda" or "cpu"
-        model (Object): Object of model
-        test_loader (Object): Object of dataloader class
-        path: (string): path to save grad-CAM results
-        target_layer (Object): Convolution layer to extract the feature maps
-    """
-    model.eval()
-    inv_transform = get_inv_transforms()
-    missclassified_image_list = []
-    label_list = []
-    pred_list = []
-
-    with torch.no_grad():
-        for data, target in test_loader:
-            data, target = data.to(device), target.to(device)
-            output = model(data)
-            pred = output.argmax(dim=1, keepdim=True)
-            if len(missclassified_image_list) > 10:
-                break
-            for i in range(len(pred)):
-                if pred[i] != target[i]:
-                    missclassified_image_list.append(data[i])
-                    label_list.append(CLASS_NAMES[target[i]])
-                    pred_list.append(CLASS_NAMES[pred[i]])
-
-    cam = GradCAM(model=model, target_layers=target_layers)
-
-    figure = plt.figure(figsize=(20,8))
-    num_of_images = 10
-    for index in range(1, num_of_images + 1):
-        plt.subplot(2, 5, index)
-        plt.title(f'Actual: {label_list[index]} Prediction: {pred_list[index]}')
-        plt.axis('off')
-        input_tensor = missclassified_image_list[index].cpu()
-        targets = [ClassifierOutputTarget(CLASS_NAMES.index(pred_list[index]))]
-
-        grayscale_cam = cam(input_tensor=input_tensor.unsqueeze(0), targets=targets)
-
-        grayscale_cam = grayscale_cam[0, :]
-        image = np.array(missclassified_image_list[index].cpu())
-        image = np.transpose(image, (1, 2, 0))
-        image = inv_transform(image=image)['image']
-        image = np.clip(image, 0, 1)
-        visualization = show_cam_on_image(image, grayscale_cam, use_rgb=True)
-        plt.imshow(visualization)
-    plt.savefig(path)
-    plt.close(figure)
