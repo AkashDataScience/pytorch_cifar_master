@@ -35,6 +35,9 @@ python main.py
 
 # To train resnet18 with 20 epochs
 python main.py --model_name resnet18 --epochs 20
+
+# To train from jupyter notebook and visualize plots
+%run pytorch_cifar_master/main.py --model_name resnet18 --epochs 20 --save_samples --save_model  --save_metrics --save_results --save_grad_cam
 ```
 
 ## Usage 
