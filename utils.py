@@ -50,6 +50,7 @@ def save_samples(train_loader, path):
 
     Args:
         train_loader (Object): Object of data loader class to get images
+        path (str): Path to store plots
     """
     inv_transform = get_inv_transforms()
 
@@ -69,6 +70,13 @@ def save_samples(train_loader, path):
     plt.close(figure)
 
 def save_model_architecture(model, filename, directory):
+    """Method to save model architecture
+
+    Args:
+        model (Object): Object of model class
+        filename (str): Name of image
+        directory (str): Name of folder to save image
+    """
 
     model_graph = draw_graph(model, input_size=(1,3,32,32), expand_nested=True, save_graph=True,
                              filename=filename, directory=directory)
@@ -81,6 +89,7 @@ def get_optimizer(model, lr, momentum=0, weight_decay=0, optimizer_type='SGD'):
         lr (float): Value of learning rate
         momentum (float): Value of momentum
         weight_decay (float): Value of weight decay
+        optimizer_type (str): Type of optimizer SGD or ADAM
 
     Returns:
         object: Object of optimizer class to update weights
@@ -146,6 +155,9 @@ def get_OneCycleLR_scheduler(optimizer, max_lr, epochs, steps_per_epoch, max_at_
 def get_criterion(loss_type='cross_entropy'):
     """Method to get loss calculation ctiterion
 
+    Args:
+        loss_type (str): Type of loss 'nll_loss' or 'cross_entropy' loss
+
     Returns:
         object: Object to calculate loss 
     """
@@ -177,9 +189,10 @@ def get_learning_rate(model, optimizer, criterion, device, trainloader):
 
     # Reset model and optimizer
     lr_finder.reset()
+
     return suggested_lr
 
-def plot_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc, path):
+def plot_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc):
     """Method to plot loss and accuracy of training and testing
 
     Args:
@@ -211,6 +224,7 @@ def save_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc, pa
         train_acc (List): List containing accuracy of model after each epoch on training data
         test_losses (List): List containing loss of model after each epoch on testing data
         test_acc (List): List containing accuracy of model after each epoch on testing data
+        path (str): Path to save accuracy and loss plots
     """
     fig, axs = plt.subplots(2,2,figsize=(15,10))
     # Plot training losses
@@ -273,6 +287,7 @@ def save_missclassified_images(device, model, test_loader, path):
         device (string): Type of device "cuda" or "cpu"
         model (Object): Object of model
         test_loader (Object): Object of dataloader class
+        path (string): Path to save missclassified images
     """
     model.eval()
     inv_transform = get_inv_transforms()
@@ -313,6 +328,8 @@ def save_grad_cam_images(device, model, test_loader, path, target_layers):
         device (string): Type of device "cuda" or "cpu"
         model (Object): Object of model
         test_loader (Object): Object of dataloader class
+        path: (string): path to save grad-CAM results
+        target_layer (Object): Convolution layer to extract the feature maps
     """
     model.eval()
     inv_transform = get_inv_transforms()

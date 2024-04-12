@@ -170,6 +170,15 @@ def start_training(num_epochs, model, device, train_loader, test_loader, optimiz
     return train_losses, train_acc, test_losses, test_acc
 
 def get_model(model_name, device):
+    """Method to make object of model class
+
+    Args:
+        model_name (str): Name of model
+        device (_type_): Type of device cuda or cpu
+
+    Returns:
+        Object: Object of model class
+    """
     if model_name=='resnet18':
         return ResNet18().to(device)
     elif model_name=='resnet34':
@@ -192,13 +201,16 @@ def main():
     train_loader = dataset.get_train_data_loader(**dataloader_args)
     test_loader = dataset.get_test_data_loader(**dataloader_args)
 
+    # Save samples of augmentated images
     utils.save_samples(train_loader, 'images/augmentation.png')
+    print("Sample images are saved at images/augmentation.png")
 
     cuda = torch.cuda.is_available()
     device = torch.device("cuda" if cuda else "cpu")
     model = get_model(args.model_name, device)
 
     utils.save_model_architecture(model, filename="ResNet", directory="images")
+    print("Model architecture is saved at images/ResNet.png")
 
     optimizer = utils.get_optimizer(model, lr=args.lr, momentum=0.9, optimizer_type=args.optimizer)
     scheduler = None
@@ -221,10 +233,13 @@ def main():
     )
 
     utils.save_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc, 'images/metrics.png')
+    print("Training metrics plot is saved at images/metrics.png")
 
     utils.save_missclassified_images(device, model, test_loader, 'images/results.png')
+    print("Missclassified images are saved at images/results.png")
 
     utils.save_grad_cam_images(device, model, test_loader, 'images/grad_cam.png', [model.layer3[-1]])
+    print("Grad-CAM images are saved at images/grad_cam.png")
 
 if __name__ == "__main__":
     main()
