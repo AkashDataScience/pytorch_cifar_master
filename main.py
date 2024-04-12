@@ -33,6 +33,11 @@ def get_args():
     parser.add_argument('--scheduler', default=None, type=str, help="Type of leraning rate scheduler e.g OneCycleLR")
     parser.add_argument('--loss_type', default='cross_entropy', type=str, help='Type of loss e.g. nll_loss')
     parser.add_argument('--model_name', default="resnet18", type=str, help="Type of model to use e.g. resnet18")
+    parser.add_argument('--show_samples', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--show_model', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--show_metrics', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--show_results', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--show_grad_cam', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
     return args
 
@@ -201,6 +206,8 @@ def main():
     train_loader = dataset.get_train_data_loader(**dataloader_args)
     test_loader = dataset.get_test_data_loader(**dataloader_args)
 
+    if args.show_samples:
+        utils.plot_samples(train_loader)
     # Save samples of augmentated images
     utils.save_samples(train_loader, 'images/augmentation.png')
     print("Sample images are saved at images/augmentation.png")
@@ -209,6 +216,8 @@ def main():
     device = torch.device("cuda" if cuda else "cpu")
     model = get_model(args.model_name, device)
 
+    if args.show_model:
+        utils.plot_model_architecture(model)
     utils.save_model_architecture(model, filename="ResNet", directory="images")
     print("Model architecture is saved at images/ResNet.png")
 
@@ -232,12 +241,18 @@ def main():
         scheduler
     )
 
+    if args.show_metrics:
+        utils.plot_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc)
     utils.save_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc, 'images/metrics.png')
     print("Training metrics plot is saved at images/metrics.png")
 
+    if args.show_results:
+        utils.plot_missclassified_images(device, model, test_loader)
     utils.save_missclassified_images(device, model, test_loader, 'images/results.png')
     print("Missclassified images are saved at images/results.png")
 
+    if args.show_grad_cam:
+        utils.plot_grad_cam_images(device, model, test_loader, [model.layer3[-1]])
     utils.save_grad_cam_images(device, model, test_loader, 'images/grad_cam.png', [model.layer3[-1]])
     print("Grad-CAM images are saved at images/grad_cam.png")
 
