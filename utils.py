@@ -44,6 +44,7 @@ def plot_samples(train_loader):
         image = np.transpose(image, (1, 2, 0))
         image = inv_transform(image=image)['image']
         plt.imshow(image)
+    plt.show()
 
 def save_samples(train_loader, path):
     """Method to plot samples of augmented images
@@ -224,6 +225,7 @@ def plot_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc):
     # Plot test aacuracy
     axs[1, 1].plot(test_acc)
     axs[1, 1].set_title("Test Accuracy")
+    plt.show()
     
 
 def save_accuracy_loss_graphs(train_losses, train_acc, test_losses, test_acc, path):
@@ -289,6 +291,7 @@ def plot_missclassified_images(device, model, test_loader):
         image = np.transpose(image, (1, 2, 0))
         image = inv_transform(image=image)['image']
         plt.imshow(image)
+    plt.show()
 
 def save_missclassified_images(device, model, test_loader, path):
     """Method to save missclassified images
@@ -379,6 +382,7 @@ def plot_grad_cam_images(device, model, test_loader, target_layers):
         image = np.clip(image, 0, 1)
         visualization = show_cam_on_image(image, grayscale_cam, use_rgb=True)
         plt.imshow(visualization)
+    plt.show()
 
 def save_grad_cam_images(device, model, test_loader, path, target_layers):
     """Method to save grad-cam images
