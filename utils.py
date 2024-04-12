@@ -34,12 +34,12 @@ def plot_samples(train_loader, is_save, path):
     """
     inv_transform = get_inv_transforms()
 
-    figure = plt.figure(figsize=(20,20))
+    figure = plt.figure(figsize=(20,8))
     num_of_images = 10
     images, labels = next(iter(train_loader))
 
     for index in range(1, num_of_images + 1):
-        plt.subplot(5, 5, index)
+        plt.subplot(2, 5, index)
         plt.title(CLASS_NAMES[labels[index].numpy()])
         plt.axis('off')
         image = np.array(images[index])
@@ -242,10 +242,10 @@ def plot_missclassified_images(device, model, test_loader, is_save, path):
                     label_list.append(CLASS_NAMES[target[i]])
                     pred_list.append(CLASS_NAMES[pred[i]])
 
-    figure = plt.figure(figsize=(20,20))
+    figure = plt.figure(figsize=(20,8))
     num_of_images = 10
     for index in range(1, num_of_images + 1):
-        plt.subplot(5, 5, index)
+        plt.subplot(2, 5, index)
         plt.title(f'Actual: {label_list[index]} Prediction: {pred_list[index]}')
         plt.axis('off')
         image = np.array(missclassified_image_list[index].cpu())
